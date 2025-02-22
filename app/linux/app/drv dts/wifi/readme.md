@@ -1,0 +1,14 @@
+
+
+
+vi /etc/wpa_supplicant.conf
+
+ctrl_interface=/var/run/wpa_supplicant
+ap_scan=1
+update_config=1
+
+network={
+        ssid="luckfox"
+        psk="12345678"
+        key_mgmt=WPA-PSK
+}

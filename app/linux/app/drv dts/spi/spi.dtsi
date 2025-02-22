@@ -1,0 +1,23 @@
+// SPI
+&spi0 {
+	pinctrl-0 = <&spi0m0_clk &spi0m0_mosi>;     // 这里没有新增miso的，是因为没用到这个引脚
+	#address-cells = <1>;
+	#size-cells = <0>;
+	spidev@0 {
+    compatible = "rockchip,spidev";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+
+	fbtft@0 {
+		compatible = "fbtft";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+		width = <240>;
+		height = <320>;
+		rotate = <0>;
+		busnum = <0>;
+		cs = <0>;
+		bgr = <0>;
+	}
+};

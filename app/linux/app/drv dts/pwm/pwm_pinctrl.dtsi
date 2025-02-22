@@ -1,0 +1,22 @@
+	pwm11 {
+		/omit-if-no-ref/
+		pwm11m0_pins: pwm11m0-pins {
+			rockchip,pins =
+				/* pwm11_ir_m0 */
+				<3 RK_PA5 5 &pcfg_pull_none>;
+		};
+
+		/omit-if-no-ref/
+		pwm11m1_pins: pwm11m1-pins {
+			rockchip,pins =
+				/* pwm11_ir_m1 */
+				<1 RK_PC7 3 &pcfg_pull_none>;
+		};
+
+		/omit-if-no-ref/
+		pwm11m2_pins: pwm11m2-pins {
+			rockchip,pins =
+				/* pwm11_ir_m2 */
+				<1 RK_PD3 5 &pcfg_pull_none>;
+		};
+	};

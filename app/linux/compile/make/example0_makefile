@@ -1,0 +1,82 @@
+# NOTE 配置交叉编译环境
+CROSS_COMPILE ?=
+# NOTE 配置架构
+ARCH ?= $(shell uname -m | sed -e "s/i.86/i386/; s/ppc.*/powerpc/; s/armv.l/arm/; s/aarch64/arm64/; s/mips64el/mips/; s/loongarch64/loongarch/;")
+
+CC := @$(CROSS_COMPILE)gcc
+LD := @$(CROSS_COMPILE)ld
+AR := @$(CROSS_COMPILE)ar
+STRIP := @$(CROSS_COMPILE)strip
+
+BUILD_DIR := ./.objs
+
+# 源文件
+SRCS := \
+	src/Zayk_KeyU_api.c \
+	src/Zayk_KeyU_dev.c \
+	src/Zayk_KeyU_log.c \
+	src/algo/sm3.c \
+	src/algo/sm4.c \
+
+ifeq ($(ENCODE),GB2312)
+	SRCS += src/Zayk_KeyU_util_gb2312.c
+	DEFINEDS += -DZAYK_ENCODE_GB2312
+else ifeq ($(ENCODE),UTF-8)
+	SRCS += src/Zayk_KeyU_util.c
+	DEFINEDS += -DZAYK_ENCODE_UTF8
+else
+	$(error Unsupported ENCODE value: $(ENCODE))
+endif
+
+
+# fatfs
+SRCS += \
+	fatfs/diskio.c \
+	fatfs/ff.c \
+	fatfs/ffsystem.c \
+	fatfs/ffunicode.c \
+
+# linux
+SRCS += \
+	src/platform/dev_init.c \
+	src/platform/linux/dev.c \
+	src/platform/linux/os_port.c \
+
+# 头文件
+INCLFLG= -I$(PWD)/
+INCLFLG+= -I$(PWD)/inc
+INCLFLG+= -I$(PWD)/fatfs
+INCLFLG+= -I$(PWD)/src/algo/
+INCLFLG+= -I$(PWD)/src/platform/
+INCLFLG+= -I$(PWD)/src/platform/linux
+
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
+
+DEPS := $(OBJS:.o=.d)
+
+# DEFINEDS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+
+CFLAG := -g -std=gnu99 -DZAYK_UNIX
+
+CFLAG += -MMD -MP $(INCLFLG) $(DEFINEDS)
+
+TARGET := ZaykKeyU
+
+.PHONY: all lib
+all:lib
+
+lib: $(OBJS)
+	@echo [LD] $(OUT)/lib$(TARGET).so
+	$(CC) -shared -o $(OUT)/lib$(TARGET).so $(OBJS) $(LIBS)
+	$(AR) -r $(OUT)/lib$(TARGET).a $(OBJS) $(LIBS)
+	@rm -f *.c
+
+$(BUILD_DIR)/%.c.o: %.c
+	@mkdir -p $(dir $@)
+	@echo [CC] $<
+	@$(CC) -fPIC -c $(CFLAG) $< -o $@
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+sinclude $(DEPS)

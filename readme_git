@@ -1,0 +1,6 @@
+添加git子模块方法 
+git submodule add <URL-to-module1> devices/module1
+
+子模块克隆
+git submodule init
+git submodule update

@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Note: The list of ForEachMacros can be obtained using:
+#
+#    git grep -h '^#define [^[:space:]]*FOR_EACH[^[:space:]]*(' include/ \
+#    | sed "s,^#define \([^[:space:]]*FOR_EACH[^[:space:]]*\)(.*$,  - '\1'," \
+#    | sort | uniq
+#
+# References:
+#   - https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+---
+# 基于哪个配置文件
+BasedOnStyle: LLVM
+# 指针的*的挨着哪边
+PointerAlignment: Right
+AlignConsecutiveMacros: AcrossComments
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+BitFieldColonSpacing: After
+BreakBeforeBraces: Linux
+# 每行最大字符数
+ColumnLimit: 120
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+# Disabled for now, see bug https://github.com/zephyrproject-rtos/zephyr/issues/48520
+#IncludeBlocks: Regroup
+# 对 case 进行缩进
+IndentCaseLabels: true
+# 缩进宽度
+# IndentWidth: 8 # add by di
+IndentWidth: 4
+# 插入括号
+InsertBraces: true
+# 在大括号之前添加空格
+SpaceBeforeParens: ControlStatementsExceptControlMacros
+# 对 include 进行排序
+SortIncludes: Never
+# 使用 Tab
+UseTab: Never
+# 注释对齐
+AlignTrailingComments: true
+# 等号两边的空格
+SpaceBeforeAssignmentOperators: true
+# 缩进
+IndentWrappedFunctionNames: true
+# 函数参数换行
+AllowAllParametersOfDeclarationOnNextLine: true
+# 括号后添加空格
+#SpaceAfterCStyleCast: true
+# Tab键盘的宽度
+TabWidth: 4
+# 连续的空行保留几行
+MaxEmptyLinesToKeep: 2

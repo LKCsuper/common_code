@@ -1,0 +1,8 @@
+1. *ulVoltageNum++ 这个是一个比较大的陷阱
+就是这个其实不是值++，而是指针++
+
+
+2.代码运行异常,跑着跑着使用命令行解析出现段错误
+MEMSET(&gpstUsrParam, 0x00, sizeof(USR_PARAM_S));
+
+本身 gpstUsrParam是指针,导致memset错误空间导致

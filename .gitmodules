@@ -1,0 +1,3 @@
+[submodule "app/linux"]
+	path = app/linux
+	url = https://gitee.com/lkcsuper/linux_common.git

@@ -1,0 +1,20 @@
+// 主要是spi gpio的操作
+&pinctrl {
+	spi0 {
+		spi0m0_clk: spi0m0-clk {
+			rockchip,pins = <1 RK_PC1 4 &pcfg_pull_none>;
+		};
+		spi0m0_mosi: spi0m0-mosi {
+			rockchip,pins = <1 RK_PC2 6 &pcfg_pull_none>;
+		};
+		// 不需要这个io所以初始化注释掉，这里的gpio只是用来初始化，并不会体现在spi控制文件中就和单片机一样
+		// spi0m0_miso: spi0m0-miso {
+		// 	rockchip,pins = <1 RK_PC3 6 &pcfg_pull_none>;
+		// };
+		// spi0m0_cs0: spi0m0-cs0 {
+		// 	rockchip,pins = <1 RK_PC0 4 &pcfg_pull_none>;
+		// };
+	};
+};
+
+

@@ -1,0 +1,23 @@
+/ {
+	model = "Luckfox Pico Pro";
+	compatible = "rockchip,rv1103g-38x38-ipc-v10", "rockchip,rv1106";
+
+	/*dc*/
+	gpio2pb1:gpio2pb1 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio2_pb1>;
+		regulator-name = "gpio2_pb1";
+		regulator-always-on;
+	};
+};
+
+
+&pinctrl {
+	/*dc*/
+	gpio2-pb1 {
+		gpio2_pb1:gpio2-pb1 {
+			rockchip,pins =	<2 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};

@@ -1,0 +1,51 @@
+# CC = gcc
+# LD = gcc
+# SRCS = $(wildcard *.c)
+# OBJS = $(patsubst %c, %o, $(SRCS))
+# # -I指定头文件目录
+# INCLUDE = -I./include
+# # -L指定库文件目录，-l指定静态库名字(去掉文件名中的lib前缀和.a后缀)
+# LIB = -L./ -lpthread -lm
+# # 开启编译warning和设置优化等级
+# CFLAGS = -Wall -O2
+
+# TARGET = speed
+
+# .PHONY:all clean
+
+# all: $(TARGET)
+# # 链接时候指定库文件目录及库文件名
+# $(TARGET): $(OBJS)
+# 	$(LD) -o $@ $^ $(LIB)
+ 
+# # 编译时候指定头文件目录
+# %.o:%.c
+# 	$(CC) -c $^ $(INCLUDE) $(CFLAGS) 
+
+# clean:
+# 	rm -f $(OBJS) $(TARGET)
+
+VERSION  =1.00
+CC   =gcc
+DEBUG   =-DUSE_DEBUG
+# 有的情况下c99是不对的
+CFLAGS  =-Wall -std=gnu99 
+SOURCES   =$(wildcard ./*.c)
+INCLUDES   =-I./
+LIB_NAMES  =-lpthread -lm
+LIB_PATH  =-L./
+OBJ   =$(patsubst %.c, %.o, $(SOURCES))
+TARGET  =speed
+#links
+$(TARGET):$(OBJ)
+	@mkdir -p output
+	$(CC) $(OBJ) $(LIB_PATH) $(LIB_NAMES) -o output/$(TARGET)_$(VERSION)
+	@rm -rf $(OBJ)
+ 
+#compile
+%.o: %.c
+	$(CC) $(INCLUDES) $(DEBUG) -c $(CFLAGS) $< -o $@
+.PHONY:clean
+clean:
+	@echo "Remove linked and compiled files......"
+	rm -rf $(OBJ) $(TARGET) output

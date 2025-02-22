@@ -1,0 +1,40 @@
+# NOTE 配置交叉编译环境
+CROSS_COMPILE ?=
+# NOTE 配置架构
+ARCH ?= $(shell uname -m | sed -e "s/i.86/i386/; s/ppc.*/powerpc/; s/armv.l/arm/; s/aarch64/arm64/; s/mips64el/mips/; s/loongarch64/loongarch/;")
+
+SRCS := \
+	tool.c \
+
+ifeq ($(ENCODE),GB2312)
+	SRCS += main_gb2312.c
+	SRCS += util_gb2312.c
+	DEFINEDS += -DZAYK_ENCODE_GB2312
+	TARGET = keyu_mp_tool_gb2312.out
+	TARGET1 = keyu_mp_tool_detect_gb2312.out
+else ifeq ($(ENCODE),UTF-8)
+	SRCS += main.c
+	SRCS += util.c
+	TARGET = keyu_mp_tool.out
+	TARGET1 = keyu_mp_tool_detect.out
+	DEFINEDS += -DZAYK_ENCODE_UTF8
+else
+	$(error Unsupported ENCODE value: $(ENCODE))
+endif
+
+INCLFLG= -I$(ROOT)/inc
+INCLFLG+= -I$(ROOT)/src/algo
+INCLFLG+= -I$(ROOT)/lib/skf/linux/
+INCLFLG+= -I./
+CFLAGS = -g -I$(OUT)
+
+LIBS = -L$(OUT) -lZaykKeyU -L$(ROOT)/lib/skf/linux/ -lZaykSKF -lm
+
+all:$(SRCS)
+	gcc $(CFLAGS) -o $(TARGET) $(SRCS) $(LIBS) $(INCLFLG) -DMP_TOOL_FOR_FACTORY
+	mv $(TARGET) $(OUT)
+	gcc $(CFLAGS) -o $(TARGET1) $(SRCS) $(LIBS) $(INCLFLG) -DMP_TOOL_FOR_DETECT
+	mv $(TARGET1) $(OUT)
+
+clean:
+	rm -rf *.o *.out

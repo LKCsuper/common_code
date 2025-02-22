@@ -1,0 +1,8 @@
+&pinctrl {
+	// 目前自己这个引脚没有使用 RK_PC7 引脚  RK_FUNC_GPIO 复用 pcfg_pull_none 模式
+    gpio1-pc7 {
+        gpio1_pc7:gpio1-pc7 {
+            rockchip,pins = <1 RK_PC7 RK_FUNC_GPIO &pcfg_pull_none>;
+        };
+    };
+};

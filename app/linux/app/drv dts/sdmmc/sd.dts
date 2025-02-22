@@ -1,0 +1,42 @@
+&sdmmc {
+    max-frequency = <50000000>;
+    no-sdio;
+    no-mmc;
+    bus-width = <4>;
+    cap-mmc-highspeed;
+    cap-sd-highspeed;
+    disable-wp;
+    pinctrl-names = "default";
+    pinctrl-0 = <&sdmmc0_clk &sdmmc0_cmd &sdmmc0_det &sdmmc0_bus4>;
+    status = "okay";
+};
+
+&sdmmc {
+  max-frequency = <50000000>;  // 最大工作频率50MHz（SD高速模式）
+  no-sdio;                     // 禁用SDIO协议（不支持WiFi/蓝牙等SDIO设备）
+  no-mmc;                      // 禁用MMC协议（不支持eMMC芯片）
+  bus-width = <4>;             // 4位数据总线（SD卡的4线模式）
+
+max-frequency: 设置控制器与SD卡通信的最高时钟频率（50MHz是SD高速模式的典型值）。
+no-sdio/no-mmc: 明确禁用SDIO和MMC功能，仅支持标准SD卡。
+bus-width: 使用4条数据线传输，提升读写速度（兼容SD标准模式）。
+
+  cap-mmc-highspeed;   // 支持MMC高速模式（但已通过no-mmc禁用MMC）
+  cap-sd-highspeed;    // 支持SD高速模式（允许SD卡运行在50MHz）
+  disable-wp;          // 禁用写保护（WP）检测（硬件无写保护引脚时需配置）
+
+cap-*-highspeed: 声明控制器支持高速模式，但实际是否生效取决于硬件和协议是否启用。
+disable-wp: 忽略写保护信号（若硬件未提供WP引脚，则必须禁用）。
+
+  pinctrl-names = "default";         // 引脚状态命名为"default"
+  pinctrl-0 = <&sdmmc0_clk &sdmmc0_cmd &sdmmc0_det &sdmmc0_bus4>;  // 关联的引脚组
+
+pinctrl-0: 指定控制器使用的物理引脚：
+sdmmc0_clk: 时钟信号引脚。
+sdmmc0_cmd: 命令信号引脚。
+sdmmc0_det: 卡检测引脚（检测SD卡插入/拔出）。
+sdmmc0_bus4: 4条数据线引脚。
+
+  status = "okay";  // 启用该控制器
+
+ status: 设置为okay表示激活此控制器，若为disabled则忽略。

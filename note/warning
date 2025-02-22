@@ -1,0 +1,12 @@
+1. 
+错误 ifdef 宏定义1 || 宏定义2
+正确 if defined(宏定义1) || defined(宏定义2)
+
+
+2.
+错误 zayk_memcpy((void *)OBOUND_VM_CIPHER_SM9M_BASE_ADDR_IDX(vidx) + ((uiKeyNumber - 1) * CIPHER_SM9_MASTER_SIZE) +
+            sizeof(*sign),
+
+因为上边没有进行全部的void*
+正确 zayk_memcpy((void *)(OBOUND_VM_CIPHER_SM9M_BASE_ADDR_IDX(vidx) + ((uiKeyNumber - 1) * CIPHER_SM9_MASTER_SIZE) +
+            sizeof(*sign)),

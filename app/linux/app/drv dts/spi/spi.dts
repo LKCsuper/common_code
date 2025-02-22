@@ -1,0 +1,12 @@
+
+// 普通spi操作
+&spi0 {
+	status = "okay";
+	pinctrl-names = "default";
+	cs-gpios = <&gpio1 RK_PC0 1>;
+	spidev@0 {
+		compatible = "rockchip,spidev";
+		spi-max-frequency = <1000000000>;	
+		reg = <0>;
+	};
+};

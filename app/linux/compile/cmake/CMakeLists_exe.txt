@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(zayk_keyu_mp_tool)
+
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+
+set(C_SOURCES ${PROJECT_SOURCE_DIR}/main.c)
+
+list(APPEND C_SOURCES ${PROJECT_SOURCE_DIR}/tool.c)
+
+list(APPEND C_SOURCES ${PROJECT_SOURCE_DIR}/util.c)
+
+list(APPEND C_SOURCES ${PROJECT_SOURCE_DIR}/../../src/algo/sm4.c)
+
+aux_source_directory(libhttp/src C_SOURCES)
+
+list(APPEND C_SOURCES ${PROJECT_SOURCE_DIR}/cJSON.c)
+
+add_definitions(-DEVENT__HAVE_OPENSSL)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/execution-charset:utf-8>")
+
+# 生成可执行文件，这里程序名即为功能名
+add_executable(${PROJECT_NAME} ${C_SOURCES})
+
+include_directories(../../inc)
+include_directories(../../src/algo)
+include_directories(../../lib/skf)
+
+include_directories(${PROJECT_SOURCE_DIR}/libhttp/include)
+include_directories(${PROJECT_SOURCE_DIR}/deps/include)
+
+add_definitions(-DZAYK_KEYU_WIN)
+
+# 添加宏定义
+if(MP_TOOL_TYPE STREQUAL "ZAYK")
+    add_definitions(-DMP_TOOL_FOR_ZAYK)
+else(MP_TOOL_TYPE STREQUAL "ZAYK_UUID")
+    add_definitions(-DMP_TOOL_FOR_ZAYK)
+    add_definitions(-DMP_TOOL_FOR_ZAYK_UUID)
+endif()
+
+target_link_libraries(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/../../bin/Release/ZaykKEYU.lib)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/../../lib/skf/zaykSkf.lib)
+
+set(DEPS_PATH ${PROJECT_SOURCE_DIR}/deps/lib/x86)
+target_link_libraries(${PROJECT_NAME} ws2_32.lib crypt32.lib
+                                ${DEPS_PATH}/libcryptod.lib 
+                                ${DEPS_PATH}/libevent_openssld.lib 
+                                ${DEPS_PATH}/libeventd.lib 
+                                ${DEPS_PATH}/libssld.lib)
+
+
+
+# 下面使用install作为项目打包使用
+# set(CMAKE_INSTALL_PREFIX ./dist)  # 自定义安装目录，打包使用
+# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin) # 打包二进制文件
+
+# set(CONFIGS ${PROJECT_SOURCE_DIR}/hello.cf) 
+# install(FILES ${CONFIGS} DESTINATION config) # 打包配置文件

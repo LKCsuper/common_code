@@ -1,0 +1,16 @@
+!!! 优先使用别人成熟的框架
+
+
+thr\MultiButton-master  按键检测,消抖等
+thr\fatfs               文件系统
+thr\alg                 算法库 
+thr\boot                自己写的通用boot,经过自己测试没有什么问题,但是移植适配性感觉比较差
+thr\MultiTimer-main 
+thr\sfud                spi flash 驱动 实现协议腹泻
+thr\xprintf             printf库比较大 使用该替代
+thr\ymodem              自己根据stm32 写的通用升级ymodem
+
+simplegui               单色屏方案
+
+freertos                个人感觉更推荐freertos 更加简练,因为rtt很臃肿 除非是flash非常大才行
+rtthread                大flash可 至少1M左右
