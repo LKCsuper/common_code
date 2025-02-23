@@ -1,11 +1,6 @@
 #ifndef __BMP280_H
 #define __BMP280_H
 
-#include "stm32f10x_tim.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x.h"
-#include "bsp_i2c.h"
-
 #define BMP280_SLAVE_ADDRESS    0x77		/* I2C´Ó»úµØÖ· */
 
 /*calibration parameters */
@@ -64,19 +59,19 @@
 
 typedef struct
 {
-    u16 dig_T1;/* calibration T1 data */
-    s16 dig_T2; /* calibration T2 data */
-    s16 dig_T3; /* calibration T3 data */
-    u16 dig_P1;/* calibration P1 data */
-    s16 dig_P2; /* calibration P2 data */
-    s16 dig_P3; /* calibration P3 data */
-    s16 dig_P4; /* calibration P4 data */
-    s16 dig_P5; /* calibration P5 data */
-    s16 dig_P6; /* calibration P6 data */
-    s16 dig_P7; /* calibration P7 data */
-    s16 dig_P8; /* calibration P8 data */
-    s16 dig_P9; /* calibration P9 data */
-    s32 t_fine; /* calibration t_fine data */
+    uint16_t dig_T1;/* calibration T1 data */
+    int16_t dig_T2; /* calibration T2 data */
+    int16_t dig_T3; /* calibration T3 data */
+    uint16_t dig_P1;/* calibration P1 data */
+    int16_t dig_P2; /* calibration P2 data */
+    int16_t dig_P3; /* calibration P3 data */
+    int16_t dig_P4; /* calibration P4 data */
+    int16_t dig_P5; /* calibration P5 data */
+    int16_t dig_P6; /* calibration P6 data */
+    int16_t dig_P7; /* calibration P7 data */
+    int16_t dig_P8; /* calibration P8 data */
+    int16_t dig_P9; /* calibration P9 data */
+    int32_t t_fine; /* calibration t_fine data */
 } bmp280Calib;
 
 uint8_t BMP280_Init(void);

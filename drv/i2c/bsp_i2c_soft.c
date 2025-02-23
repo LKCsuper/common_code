@@ -16,125 +16,11 @@ extern "C" {
 /* Private typedef -----------------------------------------------------------*/
 extern uint32_t SystemCoreClock;
 #define SYSCLK_MHZ (SystemCoreClock / 1000000) // 系统时钟频率
-I2C_SOFT_S gstRtcI2c;
+I2C_SOFT_S gstCommonI2c;
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-static char I2C_Scl(unsigned char ucData);
-static char I2C_Sda(unsigned char ucData);
-static char I2C_SdaRead(void);
-static void I2C_Delay(void);
-void I2C_Stop(I2C_SOFT_S *i2c);
-extern void Soft_I2C_Delay(uint32_t dly);
-/**
- * @brief       初始化IIC
- * @param       无
- * @retval      无
- */
-void I2C_Init(void)
-{
-    // GPIO_InitTypeDef gpio_init_struct;
-
-    // // sda scl cs 时钟使能
-    // __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    // gpio_init_struct.Pin = I2C_CLOCK_Pin;
-    // gpio_init_struct.Mode = GPIO_MODE_OUTPUT_PP;            /* 推挽输出 */
-    // gpio_init_struct.Pull = GPIO_PULLUP;                    /* 上拉 */
-    // gpio_init_struct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;     /* 快速 */
-    // HAL_GPIO_Init(I2C2_CLOCK_GPIO_Port, &gpio_init_struct); /* SCL */
-
-    // gpio_init_struct.Pin = I2C2_DATA_Pin;
-    // gpio_init_struct.Mode = GPIO_MODE_OUTPUT_OD;           /* 开漏输出 */
-    // HAL_GPIO_Init(I2C2_DATA_GPIO_Port, &gpio_init_struct); /* SDA */
-    /* SDA引脚模式设置,开漏输出,上拉, 这样就不用再设置IO方向了, 开漏输出的时候(=1), 也可以读取外部信号的高低电平 */
-    // 地址添加
-    I2C_InterfaceResister(&gstRtcI2c, I2C_SLAVE_ADDR, I2C_Scl, I2C_Sda, I2C_SdaRead, I2C_Delay);
-    I2C_Stop(&gstRtcI2c);
-}
-
-
-
-/**
- * @description: 延时微秒
- * @detail: fix us 之前没有加进这个函数
- * @param {unsigned int} 
- * @return {*}
- * @author: lkc
- */
-void delay_us(unsigned int us)
-{
-    for (unsigned int i = 0; i < I2C_DELAY_US_NUM * us; i++) {
-        // __NOP();
-        volatile int temp = 0;
-    }
-}
-
-/**
- * @description: 延时毫秒
- * @detail:
- * @param {unsigned int} ms
- * @return {*}
- * @author: lkc
- */
-void delay_ms(unsigned int ms)
-{
-    while (ms-- != 0) {
-        delay_us(1000);
-    }
-}
-/**
- * @description: 延时秒
- * @detail:
- * @param {unsigned int} s
- * @return {*}
- * @author: lkc
- */
-void delay_s(unsigned int s)
-{
-    while (s-- != 0) {
-        delay_ms(1000);
-    }
-}
-
-static char I2C_Scl(unsigned char ucData)
-{
-    if (ucData) {
-        I2C_SCL_SET;
-    } else {
-        I2C_SCL_CLR;
-    }
-    return 0;
-}
-
-static char I2C_Sda(unsigned char ucData)
-{
-    if (ucData) {
-        I2C_SDA_SET;
-    } else {
-        I2C_SDA_CLR;
-    }
-    return 0;
-}
-
-static char I2C_SdaRead(void)
-{
-    return I2C_SDA_READ;
-}
-
-/**
- * @description: 延时回调
- * @detail:
- * @return {*}
- * @author: lkc
- */
-static void I2C_Delay(void)
-{
-    // delay_us(1);
-    delay_us(10);
-}
-
 /**
  * @description: 注册接口
  * @detail:
@@ -215,10 +101,10 @@ void I2C_Stop(I2C_SOFT_S *i2c)
  * @retval      1，接收应答失败
  *              0，接收应答成功
  */
-unsigned char I2C_WaitAck(I2C_SOFT_S *i2c)
+char I2C_WaitAck(I2C_SOFT_S *i2c)
 {
     unsigned char waittime = 0;
-    unsigned char rack = SUCCESS;
+    char rack = SUCCESS;
 
     i2c->sda(1); /* 主机释放SDA线(此时外部器件可以拉低SDA线) */
     i2c->delay();
@@ -281,23 +167,22 @@ void I2C_Nack(I2C_SOFT_S *i2c)
  * @param       data: 要发送的数据
  * @retval      无
  */
-void I2C_SendByte(I2C_SOFT_S *i2c, unsigned char data)
+char I2C_SendByte(I2C_SOFT_S *i2c, unsigned char data)
 {
     unsigned char t;
 
     i2c->scl(0); /* 先将SCL拉低 */
     for (t = 0; t < 8; t++) {
         i2c->sda((data & 0x80) >> 7); /* 高位先发送 */
-        data <<= 1; /* 左移1位,用于下一次发送 */
+        data <<= 1;                   /* 左移1位,用于下一次发送 */
         i2c->delay();
         i2c->scl(1);
         i2c->delay();
         i2c->scl(0);
         i2c->delay();
     }
-    i2c->sda(1); /* 发送完成, 主机释放SDA线 */
-    I2C_WaitAck(i2c); // 等待应答
-    return;
+    i2c->sda(1);             /* 发送完成, 主机释放SDA线 */
+    return I2C_WaitAck(i2c); // 等待应答
 }
 
 /**
@@ -305,13 +190,13 @@ void I2C_SendByte(I2C_SOFT_S *i2c, unsigned char data)
  * @param       ack:  ack=1时，发送ack; ack=0时，发送nack
  * @retval      接收到的数据
  */
-unsigned char I2C_ReadByte(I2C_SOFT_S *i2c, unsigned char ack)
+char I2C_ReadByte(I2C_SOFT_S *i2c, unsigned char ack)
 {
     unsigned char i, receive = 0;
 
     i2c->sda(1); /* 释放SDA线 */
     i2c->scl(0);
-    receive = 0; 
+    receive = 0;
 
     for (i = 0; i < 8; i++) /* 接收1个字节数据 */
     {
@@ -327,7 +212,7 @@ unsigned char I2C_ReadByte(I2C_SOFT_S *i2c, unsigned char ack)
         i2c->delay();
     }
 
-    if (!ack) { 
+    if (!ack) {
         I2C_Nack(i2c); /* 发送nACK */
     } else {
         I2C_Ack(i2c); /* 发送ACK */
@@ -343,7 +228,7 @@ unsigned char I2C_ReadByte(I2C_SOFT_S *i2c, unsigned char ack)
  * @return {*}
  * @author: lkc
  */
-unsigned char I2C_CheckDevice(I2C_SOFT_S *i2c, unsigned char _Address)
+char I2C_CheckDevice(I2C_SOFT_S *i2c, unsigned char _Address)
 {
     unsigned char ucAck;
     I2C_Start(i2c); /* 发送启动信号 */
@@ -364,25 +249,46 @@ unsigned char I2C_CheckDevice(I2C_SOFT_S *i2c, unsigned char _Address)
 char SOFT_I2C_Mem_Write(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, unsigned char *pData,
                         uint16_t Size, uint64_t timeout)
 {
+    char ack = 0;
     DevAddress = DevAddress << 1;
 
     // 1. 产生起始信号
     I2C_Start(i2c);
 
     // 2. 发送设备地址，写控制位 (0)
-    I2C_SendByte(i2c, DevAddress | 0);
+    ack = I2C_SendByte(i2c, DevAddress | 0);
+    if (ack) {
+        I2C_Stop(i2c);
+        return false; // 写入失败
+    }
 
     // 3. 发送内存地址
     if (MemAddSize == 1) { // 单字节地址
-        I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF));
-    } else if (MemAddSize == 2) {                                     // 双字节地址
-        I2C_SendByte(i2c, (unsigned char)((MemAddress >> 8) & 0xFF)); // 发送高字节
-        I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF)); // 发送低字节
+        ack = I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF));
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
+    } else if (MemAddSize == 2) {                                           // 双字节地址
+        ack = I2C_SendByte(i2c, (unsigned char)((MemAddress >> 8) & 0xFF)); // 发送高字节
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
+        ack = I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF)); // 发送低字节
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
     }
 
     // 4. 发送数据
     for (uint16_t i = 0; i < Size; i++) {
-        I2C_SendByte(i2c, pData[i]);
+        ack = I2C_SendByte(i2c, pData[i]);
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
     }
 
     // 5. 产生停止信号
@@ -400,7 +306,7 @@ char SOFT_I2C_Mem_Write(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uin
 char SOFT_I2C_Mem_Read(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, unsigned char *pData,
                        uint16_t Size, uint64_t timeout)
 {
-    unsigned char ack;
+    char ack = 0;
 
     DevAddress = DevAddress << 1;
 
@@ -408,22 +314,40 @@ char SOFT_I2C_Mem_Read(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint
     I2C_Start(i2c);
 
     // 2. 发送设备地址，写控制位 (0)
-    I2C_SendByte(i2c, DevAddress | 0);
-
+    ack = I2C_SendByte(i2c, DevAddress | 0);
+    if (ack) {
+        I2C_Stop(i2c);
+        return false; // 写入失败
+    }
     // 3. 发送内存地址
     if (MemAddSize == 1) {
-        I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF));
+        ack = I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF));
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
     } else if (MemAddSize == 2) {
-        I2C_SendByte(i2c, (unsigned char)((MemAddress >> 8) & 0xFF)); // 发送高字节
-        I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF)); // 发送低字节
+        ack = I2C_SendByte(i2c, (unsigned char)((MemAddress >> 8) & 0xFF)); // 发送高字节
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
+        ack = I2C_SendByte(i2c, (unsigned char)(MemAddress & 0xFF)); // 发送低字节
+        if (ack) {
+            I2C_Stop(i2c);
+            return false; // 写入失败
+        }
     }
 
     // 4. 产生重复起始信号
     I2C_Start(i2c);
 
     // 5. 发送设备地址，读控制位 (1)
-    I2C_SendByte(i2c, DevAddress| 1);
-
+    ack = I2C_SendByte(i2c, DevAddress | 1);
+    if (ack) {
+        I2C_Stop(i2c);
+        return false; // 写入失败
+    }
     // 6. 读取数据
     for (uint16_t i = 0; i < Size; i++) {
         if (i == (Size - 1)) {
@@ -443,6 +367,66 @@ char SOFT_I2C_Mem_Read(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint
 }
 
 /**
+ * @brief  向IIC设备的寄存器连续写入数据，带超时重试设置，供mpu接口调用
+ * @param  Address: IIC设备地址
+ * @param  RegisterAddr: 寄存器地址
+ * @param  RegisterLen: 要写入数据的长度
+ * @param  RegisterValue: 要指向写入数据的指针
+ * @retval 0正常，非0异常
+ */
+int Sensors_I2C_WriteRegister(unsigned char slave_addr, unsigned char reg_addr, unsigned short len,
+                              const unsigned char *data_ptr)
+{
+    char retries = 0;
+    int ret = 0;
+    unsigned short retry_in_mlsec = RETRY_IN_MS;
+
+tryWriteAgain:
+    ret = 0;
+    ret = SOFT_I2C_Mem_Write(&gstCommonI2c, slave_addr, reg_addr, 1, (unsigned char *)data_ptr, len, 1000);
+
+    if (ret && retry_in_mlsec) {
+        if (retries++ > 4) {
+            return ret;
+        }
+
+        I2C_DELAY_MS(retry_in_mlsec);
+        goto tryWriteAgain;
+    }
+    return ret;
+}
+
+/**
+ * @brief  向IIC设备的寄存器连续读出数据,带超时重试设置，供mpu接口调用
+ * @param  Address: IIC设备地址
+ * @param  RegisterAddr: 寄存器地址
+ * @param  RegisterLen: 要读取的数据长度
+ * @param  RegisterValue: 指向存储读出数据的指针
+ * @retval 0正常，非0异常
+ */
+int Sensors_I2C_ReadRegister(unsigned char slave_addr, unsigned char reg_addr, unsigned short len,
+                             unsigned char *data_ptr)
+{
+    char retries = 0;
+    int ret = 0;
+    unsigned short retry_in_mlsec = RETRY_IN_MS;
+
+tryReadAgain:
+    ret = 0;
+    ret = SOFT_I2C_Mem_Read(&gstCommonI2c, slave_addr, reg_addr, 1, (unsigned char *)data_ptr, len, 1000);
+
+    if (ret && retry_in_mlsec) {
+        if (retries++ > 4) {
+            return ret;
+        }
+
+        I2C_DELAY_MS(retry_in_mlsec);
+        goto tryReadAgain;
+    }
+    return ret;
+}
+
+/**
  * @description: WriteBitToControlRegister
  * @detail: 写某一位到控制寄存器
  * @param {void} *i2c
@@ -452,7 +436,8 @@ char SOFT_I2C_Mem_Read(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint
  * @return {*}
  * @author: lkc
  */
-// void WriteBitToControlRegister(void *i2c, unsigned char ControlRegister, unsigned char BitNumber, unsigned char Value,
+// void WriteBitToControlRegister(void *i2c, unsigned char ControlRegister, unsigned char BitNumber, unsigned char
+// Value,
 //                                unsigned int ulTimeOut)
 // {
 //     unsigned char tmp;
@@ -467,7 +452,8 @@ char SOFT_I2C_Mem_Read(void *i2c, uint16_t DevAddress, uint16_t MemAddress, uint
 //         Value = 7;
 //     }
 
-//     SOFT_I2C_Mem_Read(i2c, PCF8563_ADDRESS, ControlRegister ? PCF8563_REG_CONTROL_STATUS1 : PCF8563_REG_CONTROL_STATUS2,
+//     SOFT_I2C_Mem_Read(i2c, PCF8563_ADDRESS, ControlRegister ? PCF8563_REG_CONTROL_STATUS1 :
+//     PCF8563_REG_CONTROL_STATUS2,
 //                       1, &tmp, 1, ulTimeOut);
 
 //     tmp &= ~(1 << BitNumber);
